@@ -10,6 +10,7 @@ import (
 	"sync"
 	"syscall"
 	"time"
+	"logger"
 
 	"github.com/pkg/errors"
 	"github.com/sethvargo/go-password/password"
@@ -58,10 +59,20 @@ func runUp(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
+	startTime := time.Now()
+
+
 	basicAuthErr := makeBasicAuthFiles(path.Join(cfg.workingDir, "secrets"))
 	if basicAuthErr != nil {
 		return errors.Wrap(basicAuthErr, "cannot create basic-auth-* files")
 	}
+
+	endTime := time.Now()
+	err := logger.LogTimestampToFile("makeBasicAuthFiles", startTime, endTime)
+    if err != nil {
+        fmt.Println("Error logging timestamp:", err)
+    }
+
 
 	start := time.Now()
 	supervisor, err := pkg.NewSupervisor("/run/containerd/containerd.sock")
